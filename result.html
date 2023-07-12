@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Upload</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .navBar {
+            background: rgb(22, 21, 21);
+            padding: 0;
+            margin: 0;
+            height: 45px;
+            margin-bottom: 20px;
+        }
+
+        .navBar h3 {
+            background: rgb(22, 21, 21);
+            padding: 0;
+            margin: 0;
+            color: white;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            font-weight: 400;
+            text-align: center;
+            padding: 5px 0;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 90%;
+            margin: 2% 4%;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navBar">
+        <h3>Record from RDS fetched using Lambda Service</h3>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>SL No</th>
+                <th>File Name</th>
+                <th>Char Count</th>
+                <th>Created Date</th>
+            </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+    </table>
+
+    <script>
+        let slNo = 1;
+        //Format Date time in read able format
+        function formatDateTime(timestamp) {
+            const date = new Date(timestamp);
+            const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: 'numeric' };
+            const formattedDate = date.toLocaleString('en-IN', options);
+            return formattedDate
+        }
+
+        // Fetch data from API endpoint
+        fetch('https://vi3vquu9ff.execute-api.ap-south-1.amazonaws.com/default/FetchLetterCountFromRDS')
+            .then(response => response.json())
+            .then(data => {
+                debugger;
+                // Populate table with fetched data
+                const tableBody = document.getElementById('table-body');
+
+                data.data.sort((a, b) => new Date(a.CREATED_DATE) - new Date(b.CREATED_DATE)).forEach(item => {
+                    const row = document.createElement('tr');
+
+                    const slNoCell = document.createElement('td');
+                    slNoCell.textContent = slNo++;
+                    row.appendChild(slNoCell);
+
+                    const fileNameCell = document.createElement('td');
+                    fileNameCell.textContent = item.FILE_NAME;
+                    row.appendChild(fileNameCell);
+
+                    const charCountCell = document.createElement('td');
+                    charCountCell.textContent = item.CHAR_COUNT;
+                    row.appendChild(charCountCell);
+
+                    const createdDateCell = document.createElement('td');
+                    createdDateCell.textContent = formatDateTime(item.CREATED_DATE);
+                    row.appendChild(createdDateCell);
+
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.log('An error occurred:', error);
+            });
+    </script>
+</body>
+
+</html>
